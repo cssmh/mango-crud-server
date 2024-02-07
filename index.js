@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 3000;
@@ -28,14 +28,26 @@ async function run() {
 
     const mangoCollection = client.db("MangoDB").collection("mangoes");
 
-    app.post("/mangoes", async(req, res) => {
+    app.post("/mangoes", async (req, res) => {
       const gotMangoesFromCLient = req.body;
       console.log(gotMangoesFromCLient);
-      const result = await mangoCollection.insertOne(gotMangoesFromCLient)
-      res.send(result)
-    })
+      const result = await mangoCollection.insertOne(gotMangoesFromCLient);
+      res.send(result);
+    });
 
+    app.get("/mangos", async (req, res) => {
+      const cursor = mangoCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
+    app.delete("/mangoes/:id", async (req, res) => {
+      const deleteId = req.params.id;
+      console.log("got id from client", deleteId);
+      const query = { _id: new ObjectId(deleteId) };
+      const result = await mangoCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
